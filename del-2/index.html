@@ -46,7 +46,7 @@ WiFi shield for this example to work. See comment below in the code.
 
 	<h2>Enter IP-address of the Arduino</h2>
 
-	<input type="text" id="ArduinoIpAddress" value="192.168.43.236" type="url"/>
+	<input type="text" id="ArduinoIpAddress" value="192.168.43.17" type="url"/>
 	<br/>
 	<button class="green" onclick="app.connect()">CONNECT</button>
 	<button class="charcoal" onclick="app.disconnect()">DISCONNECT</button>
@@ -56,21 +56,62 @@ WiFi shield for this example to work. See comment below in the code.
 	<h2>Script your Arduino using JavaScript!</h2>
 
 	<textarea id="ArduinoScript" rows="12">
-// Blinking a LED.
+
+
+
+
 var arduino = evothings.arduinotcp
-var pin = 2
-var delay = 1000
+var carsRed_pedGreen = 2
+var carsYellow = 3
+var carsGreen = 4
+var pedRed = 5
+var delay = 2000
+var initialDelay = 500
+var pedestriansPassed = false
 arduino.port = 3300
-arduino.pinMode(pin, OUTPUT)
-function ledOn() {
-    arduino.digitalWrite(pin, HIGH)
-    arduino.setTimeout(ledOff, delay)
+arduino.pinMode(carsRed_pedGreen, OUTPUT)
+arduino.pinMode(carsYellow, OUTPUT)
+arduino.pinMode(carsGreen, OUTPUT)
+arduino.pinMode(pedRed, OUTPUT)
+
+function trafficLightClicked(){
+	arduino.setTimeout(carsGreen_pedestriansRed, initialDelay)
 }
-function ledOff() {
-    arduino.digitalWrite(pin, LOW)
-    arduino.setTimeout(ledOn, delay)
+
+function carsGreen_pedestriansRed(){
+	arduino.digitalWrite(carsYellow, LOW)
+	arduino.digitalWrite(carsRed_pedGreen, LOW)
+	arduino.digitalWrite(carsGreen, HIGH)
+	arduino.digitalWrite(pedRed, HIGH)
+	if(!pedestriansPassed){
+		arduino.setTimeout(carsYellow_pedestrianRed, delay)
+	}
 }
-ledOn() // Start blinking
+
+function carsYellow_pedestrianRed(){
+	arduino.digitalWrite(carsGreen, LOW)
+	arduino.digitalWrite(carsYellow, HIGH)
+	if(pedestriansPassed){
+		arduino.digitalWrite(carsRed_pedGreen, HIGH)
+		arduino.setTimeout(carsGreen_pedestriansRed, delay)
+	} else {
+		arduino.digitalWrite(carsRed_pedGreen, LOW)
+		arduino.digitalWrite(pedRed, HIGH)
+		arduino.setTimeout(carsRed_pedestrianGreen,delay)
+	}
+}
+
+function carsRed_pedestrianGreen(){
+	arduino.digitalWrite(carsGreen, LOW)
+	arduino.digitalWrite(pedRed, LOW)
+	arduino.digitalWrite(carsYellow, LOW)
+	arduino.digitalWrite(carsRed_pedGreen, HIGH)
+	pedestriansPassed = true
+	arduino.setTimeout(carsYellow_pedestrianRed, delay)
+}
+
+trafficLightClicked()
+
 		</textarea>
 
 	<button class="blue" onclick="app.runScript()">Run Script</button>
