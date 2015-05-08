@@ -61,18 +61,20 @@ WiFi shield for this example to work. See comment below in the code.
 
 
 var arduino = evothings.arduinotcp
-var carsRed_pedGreen = 2
+var carsRed = 2
 var carsYellow = 3
 var carsGreen = 4
 var pedRed = 5
+var pedGreen = 6
 var delay = 2000
-var initialDelay = 500
+var initialDelay = 300
 var pedestriansPassed = false
 arduino.port = 3300
-arduino.pinMode(carsRed_pedGreen, OUTPUT)
+arduino.pinMode(carsRed, OUTPUT)
 arduino.pinMode(carsYellow, OUTPUT)
 arduino.pinMode(carsGreen, OUTPUT)
 arduino.pinMode(pedRed, OUTPUT)
+arduino.pinMode(pedGreen, OUTPUT)
 
 function trafficLightClicked(){
 	arduino.setTimeout(carsGreen_pedestriansRed, initialDelay)
@@ -80,7 +82,8 @@ function trafficLightClicked(){
 
 function carsGreen_pedestriansRed(){
 	arduino.digitalWrite(carsYellow, LOW)
-	arduino.digitalWrite(carsRed_pedGreen, LOW)
+	arduino.digitalWrite(carsRed, LOW)
+	arduino.digitalWrite(pedGreen, LOW)
 	arduino.digitalWrite(carsGreen, HIGH)
 	arduino.digitalWrite(pedRed, HIGH)
 	if(!pedestriansPassed){
@@ -91,12 +94,13 @@ function carsGreen_pedestriansRed(){
 function carsYellow_pedestrianRed(){
 	arduino.digitalWrite(carsGreen, LOW)
 	arduino.digitalWrite(carsYellow, HIGH)
+	arduino.digitalWrite(pedRed, HIGH)
 	if(pedestriansPassed){
-		arduino.digitalWrite(carsRed_pedGreen, HIGH)
+		arduino.digitalWrite(carsRed, HIGH)
 		arduino.setTimeout(carsGreen_pedestriansRed, delay)
 	} else {
-		arduino.digitalWrite(carsRed_pedGreen, LOW)
-		arduino.digitalWrite(pedRed, HIGH)
+		arduino.digitalWrite(carsRed, LOW)
+		arduino.digitalWrite(pedGreen, LOW)
 		arduino.setTimeout(carsRed_pedestrianGreen,delay)
 	}
 }
@@ -105,9 +109,31 @@ function carsRed_pedestrianGreen(){
 	arduino.digitalWrite(carsGreen, LOW)
 	arduino.digitalWrite(pedRed, LOW)
 	arduino.digitalWrite(carsYellow, LOW)
-	arduino.digitalWrite(carsRed_pedGreen, HIGH)
+	arduino.digitalWrite(carsRed, HIGH)
+	arduino.digitalWrite(pedGreen, HIGH)
+	arduino.setTimeout(blinkingLight, delay*2)
 	pedestriansPassed = true
-	arduino.setTimeout(carsYellow_pedestrianRed, delay)
+}
+
+function lightOn(){
+	count++;
+	arduino.digitalWrite(pedGreen, HIGH)
+	arduino.setTimeout(lightOff, delay*0.2)
+}
+function lightOff(){
+	arduino.digitalWrite(pedGreen, LOW)
+	
+	if(count>5){
+		carsYellow_pedestrianRed()
+	} else{
+		arduino.setTimeout(lightOn, delay*0.2)
+	}
+}
+
+var count = 0
+
+function blinkingLight(){
+	lightOff()
 }
 
 trafficLightClicked()
